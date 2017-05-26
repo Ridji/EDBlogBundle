@@ -4,31 +4,62 @@ namespace  ED\BlogBundle\Util;
 
 use ED\BlogBundle\Util\EDEncryption;
 
-class IDEncrypt {
+class IDEncrypt
+{
 
-  private static $EDEncr;
+    private $EDEncr;
 
-  private static function getEDEncr() {
-    if (!self::$EDEncr instanceof EDEncryption) {
-      self::$EDEncr = new EDEncryption();
+    private $salt;
+
+    /**
+     * IDEncrypt constructor.
+     * @param $salt
+     */
+    public function __construct($salt = 'commentsEncrypts')
+    {
+        $this->salt = $salt;
     }
-    return self::$EDEncr;
-  }
 
-  /**
-   * @param  raw int
-   * @return encrypted string 
-   */
-  public static function encrypt($id) {
-    return self::getEDEncr()->encode($id);
-  }
+    /**
+     * @return mixed
+     */
+    public function getSalt()
+    {
+        return $this->salt;
+    }
 
-  /**
-   * @param  raw int
-   * @return decrypted string 
-   */
-  public static function decrypt($encrypted) {
-    return self::getEDEncr()->decode($encrypted);
-  }
+    /**
+     * @param mixed $salt
+     */
+    public function setSalt($salt)
+    {
+        $this->salt = $salt;
+    }
+
+    private function getEDEncr()
+    {
+        if (!$this->EDEncr instanceof EDEncryption) {
+            $this->EDEncr = new EDEncryption($this->salt);
+        }
+        return $this->EDEncr;
+    }
+
+    /**
+     * @param $id
+     * @return bool|string
+     */
+    public function encrypt($id)
+    {
+        return $this->getEDEncr()->encode($id);
+    }
+
+    /**
+     * @param $encrypted
+     * @return bool|string
+     */
+    public function decrypt($encrypted)
+    {
+        return $this->getEDEncr()->decode($encrypted);
+    }
 
 }

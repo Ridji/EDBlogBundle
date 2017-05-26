@@ -2,59 +2,77 @@
 
 namespace  ED\BlogBundle\Util;
 
-class EDEncryption {
+class EDEncryption
+{
 
-  private $salt;
+    /**
+     * @var
+     */
+    private $salt;
 
-  public function safe_b64encode($string) {
-    $data = base64_encode($string);
-    $data = str_replace(array('+', '/', '='), array('-', '_', ''), $data);
-    return $data;
-  }
+    private $method;
 
-  public function safe_b64decode($string) {
-    $data = str_replace(array('-', '_'), array('+', '/'), $string);
-    $mod4 = strlen($data) % 4;
-    if ($mod4) {
-      $data .= substr('====', $mod4);
+    /**
+     * EDEncryption constructor.
+     * @param $salt
+     * @param string $method
+     */
+    public function __construct($salt, $method = 'AES-256-CBC')
+    {
+        $this->salt = $salt;
+        $this->method = $method;
     }
-    return base64_decode($data);
-  }
 
-  /**
-   * @param  raw int
-   * @return encrypted string 
-   */
-  public function encode($value) {
-
-    if (!$value) {
-      return false;
+    public function safe_b64encode($string)
+    {
+        $data = base64_encode($string);
+        $data = str_replace(array('+', '/', '='), array('-', '_', ''), $data);
+        return $data;
     }
-    $this->salt = 'encrypt';
-    $text = $value;
-    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
-    $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
-    $crypttext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->salt, $text, MCRYPT_MODE_ECB, $iv);
-    return trim($this->safe_b64encode($crypttext));
-  }
 
-  /**
-   * @param  raw int
-   * @return decrypted string 
-   */
-  public function decode($value) {
-
-    if (!$value) {
-      return false;
+    public function safe_b64decode($string)
+    {
+        $data = str_replace(array('-', '_'), array('+', '/'), $string);
+        $mod4 = strlen($data) % 4;
+        if ($mod4) {
+            $data .= substr('====', $mod4);
+        }
+        return base64_decode($data);
     }
-    $this->salt = 'encrypt';
-    $crypttext = $this->safe_b64decode($value);
-    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
-    $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
-    $decrypttext = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $this->salt, $crypttext, MCRYPT_MODE_ECB, $iv);
-    return trim($decrypttext);
-  }
+
+    /**
+     * @param $value
+     * @return bool|string
+     */
+    public function encode($value)
+    {
+        if (!$value) {
+            return false;
+        }
+        $text = $value;
+        $iv_size = openssl_cipher_iv_length($this->method);
+        $iv = openssl_random_pseudo_bytes($iv_size);
+        $cryptText = openssl_encrypt($text, $this->method, $this->salt, 0, $iv);
+
+        return trim($this->safe_b64encode($cryptText));
+    }
+
+    /**
+     * @param $value
+     * @return bool|string
+     */
+    public function decode($value)
+    {
+        if (!$value) {
+            return false;
+        }
+
+        $cryptText = $this->safe_b64decode($value);
+        $iv_size = openssl_cipher_iv_length($this->method);
+        $iv = openssl_random_pseudo_bytes($iv_size);
+        $decryptText = openssl_encrypt($cryptText, $this->method, $this->salt, 0, $iv);
+
+        return trim($decryptText);
+    }
 
 }
-
-?>

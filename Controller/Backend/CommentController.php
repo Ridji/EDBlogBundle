@@ -30,6 +30,7 @@ class CommentController extends DefaultController
     {
         $user = $this->getUser();
         $blogSettings = $this->get('blog_settings');
+        $idEncrypt = new IDEncrypt();
 
         if($this->container->get('security.authorization_checker')->isGranted('ACCESS_COMMENTS', $user) === false || $this->container->get('security.authorization_checker')->isGranted('CREATE_COMMENT', $user) === false)
             throw new AccessDeniedHttpException("Sorry, commenting is currently disabled by blog administrator.");
@@ -77,13 +78,13 @@ class CommentController extends DefaultController
         $comments = $this->getDoctrine()->getRepository( $class )->findByArticle($article, $this->get("blog_settings")->getCommentsDisplayOrder());
 
         return new JsonResponse(array(
-            'success' => true,
-            'lock' => true,
-            'currentComment'=>IDEncrypt::encrypt($object->getId()),
-            'html' =>  $this->renderView("@EDBlog/Comment/list.html.twig", array(
-                'form' => $form->createView(),
-                'article' => $article,
-                'comments' => $comments
+            'success'       => true,
+            'lock'          => true,
+            'currentComment'=> $idEncrypt->encrypt($object->getId()),
+            'html'          =>  $this->renderView("@EDBlog/Comment/list.html.twig", array(
+                'form'      => $form->createView(),
+                'article'   => $article,
+                'comments'  => $comments
             ))
         ));
     }

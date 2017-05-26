@@ -75,7 +75,8 @@ class EDBlogExtension extends \Twig_Extension
 
     public function encrypt($id)
     {
-        $return = IDEncrypt::encrypt($id);
+        $idEncrypt = new IDEncrypt();
+        $return = $idEncrypt->encrypt($id);
         return $return;
     }
 
