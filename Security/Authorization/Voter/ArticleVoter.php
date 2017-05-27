@@ -32,24 +32,7 @@ class ArticleVoter implements VoterInterface
 
     public function supportsClass($class)
     {
-        try
-        {
-            $testObject = new $class();
-
-            if ($testObject instanceof ArticleInterface)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        catch(\Exception $e)
-        {
-            return false;
-        }
-
+        return in_array(ArticleInterface::class, class_implements($class));
     }
 
     public function vote(TokenInterface $token, $object, array $attributes)
@@ -129,5 +112,4 @@ class ArticleVoter implements VoterInterface
 
         }
     }
-
 }
